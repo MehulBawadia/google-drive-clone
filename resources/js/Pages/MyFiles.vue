@@ -1,9 +1,12 @@
 <script setup>
-import { router } from "@inertiajs/vue3";
+import { Link, router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { ChevronRightIcon, HomeIcon } from "@heroicons/vue/20/solid";
 
 const { files } = defineProps({
     files: Object,
+    folder: Object,
+    ancestors: Array,
 });
 
 const openFolder = (file) => {
@@ -17,6 +20,35 @@ const openFolder = (file) => {
 
 <template>
     <AuthenticatedLayout>
+        <nav class="flex items-center justify-between p-1 mb-3">
+            <ol class="inline-flex items-center space-x-1">
+                <li
+                    v-for="ancestor in ancestors.data"
+                    :key="ancestor.id"
+                    class="inline-flex items-center"
+                >
+                    <Link
+                        v-if="!ancestor.parent_id"
+                        :href="route('myFiles')"
+                        class="flex items-center text-sm font-medium text-gray-700 hover:text-blue-600"
+                    >
+                        <HomeIcon class="w-4 h-4 mr-1" />
+                        My Files
+                    </Link>
+
+                    <div v-else class="flex items-center">
+                        <ChevronRightIcon class="w-5 h-5" />
+                        <Link
+                            :href="route('myFiles', { folder: ancestor.path })"
+                            class="text-sm font-medium text-gray-700 hover:text-blue-600"
+                        >
+                            {{ ancestor.name }}
+                        </Link>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
         <table
             class="w-full text-sm text-left text-gray-500 rounded overflow-hidden shadow"
         >

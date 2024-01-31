@@ -38,9 +38,14 @@ class MyFilesController extends Controller
 
         $files = FileResource::collection($files);
 
+        $ancestors = FileResource::collection([...$folder->ancestors, $folder]);
+
+        $folder = new FileResource($folder);
+
         return Inertia::render('MyFiles', [
             'rootFolder' => $folder,
             'files' => $files,
+            'ancestors' => $ancestors,
         ]);
     }
 
