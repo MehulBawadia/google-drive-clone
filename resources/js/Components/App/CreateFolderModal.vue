@@ -1,6 +1,6 @@
 <script setup>
 import { nextTick, ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 import Modal from "@/Components/App/Modal.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
@@ -17,6 +17,7 @@ const folderNameInput = ref(null);
 
 const form = useForm({
     name: "",
+    parent_id: usePage().props.rootFolder.id,
 });
 
 const createFolder = () => {

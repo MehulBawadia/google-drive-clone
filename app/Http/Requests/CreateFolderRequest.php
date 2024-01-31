@@ -24,4 +24,16 @@ class CreateFolderRequest extends ParentIdBaseRequest
             ],
         ]);
     }
+
+    /**
+     * Custom error messages.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'name.unique' => 'Folder ":input" already exists',
+        ];
+    }
 }

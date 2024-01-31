@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasCreatorAndUpdater;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -31,6 +32,18 @@ class File extends Model
     public function parent()
     {
         return $this->belongsTo(File::class, 'parent_id');
+    }
+
+    /**
+     * Custom attribute for owner.
+     */
+    public function owner(): Attribute
+    {
+        return Attribute::make(
+            get: function (mixed $value, array $attributes) {
+                return $attributes['created_by'] === auth()->id() ? 'Me' : $this->user->name;
+            }
+        );
     }
 
     /**

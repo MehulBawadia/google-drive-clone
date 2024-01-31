@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateFolderRequest;
+use App\Http\Resources\FileResource;
 use App\Models\File;
 use Inertia\Inertia;
 
@@ -15,7 +16,21 @@ class MyFilesController extends Controller
      */
     public function index()
     {
-        return Inertia::render('MyFiles');
+        $rootFolder = $this->getRoot();
+        $files = File::where([
+            'parent_id' => $rootFolder->id,
+            'created_by' => auth()->id(),
+        ])
+            ->orderBy('is_folder', 'DESC')
+            ->orderBy('created_at', 'DESC')
+            ->paginate(10);
+
+        $files = FileResource::collection($files);
+
+        return Inertia::render('MyFiles', [
+            'rootFolder' => $rootFolder,
+            'files' => $files,
+        ]);
     }
 
     /**
