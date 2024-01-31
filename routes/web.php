@@ -31,7 +31,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/my-files', [MyFilesController::class, 'index'])->name('myFiles');
+    Route::get('/my-files/{folder?}', [MyFilesController::class, 'index'])->where('folder', '(.*)')->name('myFiles');
     Route::post('/folder/create', [MyFilesController::class, 'createFolder'])->name('folder.create');
 });
 

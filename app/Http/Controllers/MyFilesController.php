@@ -14,11 +14,22 @@ class MyFilesController extends Controller
      *
      * @return \Inertia\Inertia
      */
-    public function index()
+    public function index(?string $folder = null)
     {
-        $rootFolder = $this->getRoot();
+        if ($folder) {
+            $folder = File::query()
+                ->where([
+                    'created_by' => auth()->id(),
+                    'path' => $folder,
+                ])
+                ->firstOrFail();
+        }
+        if (! $folder) {
+            $folder = $this->getRoot();
+        }
+
         $files = File::where([
-            'parent_id' => $rootFolder->id,
+            'parent_id' => $folder->id,
             'created_by' => auth()->id(),
         ])
             ->orderBy('is_folder', 'DESC')
@@ -28,7 +39,7 @@ class MyFilesController extends Controller
         $files = FileResource::collection($files);
 
         return Inertia::render('MyFiles', [
-            'rootFolder' => $rootFolder,
+            'rootFolder' => $folder,
             'files' => $files,
         ]);
     }
