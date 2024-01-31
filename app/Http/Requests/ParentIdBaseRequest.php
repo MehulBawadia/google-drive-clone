@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Http\Requests;
+
+use App\Models\File;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class ParentIdBaseRequest extends FormRequest
+{
+    public ?File $parent = null;
+
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        $this->parent = File::query()->where('id', $this->parent_id)->first();
+        if ($this->parent && ! $this->parent->isOwnedBy(auth()->id())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'parent_id' => [
+                Rule::exists(File::class, 'id')->where(function ($query) {
+                    return $query->where(['is_folder' => true, 'created_by' => auth()->id()]);
+                })
+            ],
+        ];
+    }
+}

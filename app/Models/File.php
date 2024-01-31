@@ -11,4 +11,14 @@ use Kalnoy\Nestedset\NodeTrait;
 class File extends Model
 {
     use HasCreatorAndUpdater, HasFactory, NodeTrait, SoftDeletes;
+
+    /**
+     * Check if the file or folder is owned by the provided user id.
+     *
+     * @return boolean
+     */
+    public function isOwnedBy($userId)
+    {
+        return $this->created_by === $userId;
+    }
 }
