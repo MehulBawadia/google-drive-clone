@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateFolderRequest;
 use App\Models\File;
 use Inertia\Inertia;
-use App\Http\Requests\CreateFolderRequest;
 
 class MyFilesController extends Controller
 {

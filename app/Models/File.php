@@ -15,7 +15,7 @@ class File extends Model
     /**
      * Check if the file or folder is owned by the provided user id.
      *
-     * @return boolean
+     * @return bool
      */
     public function isOwnedBy($userId)
     {

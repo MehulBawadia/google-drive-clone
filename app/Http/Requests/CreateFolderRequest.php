@@ -2,9 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
-use App\Http\Requests\ParentIdBaseRequest;
 use App\Models\File;
+use Illuminate\Validation\Rule;
 
 class CreateFolderRequest extends ParentIdBaseRequest
 {
@@ -21,7 +20,7 @@ class CreateFolderRequest extends ParentIdBaseRequest
                 Rule::unique(File::class, 'name')
                     ->where('created_by', auth()->id())
                     ->where('parent_id', $this->parent_id)
-                    ->whereNull('deleted_at')
+                    ->whereNull('deleted_at'),
             ],
         ]);
     }
