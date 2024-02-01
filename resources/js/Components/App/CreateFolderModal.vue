@@ -17,7 +17,7 @@ const folderNameInput = ref(null);
 
 const form = useForm({
     name: "",
-    parent_id: usePage().props.rootFolder.id,
+    parent_id: usePage().props.rootFolder?.id ?? null,
 });
 
 const createFolder = () => {
