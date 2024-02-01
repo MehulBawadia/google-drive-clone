@@ -39,6 +39,10 @@ class MyFilesController extends Controller
 
         $files = FileResource::collection($files);
 
+        if (request()->wantsJson()) {
+            return $files;
+        }
+
         $ancestors = FileResource::collection([...$folder->ancestors, $folder]);
 
         $folder = new FileResource($folder);
