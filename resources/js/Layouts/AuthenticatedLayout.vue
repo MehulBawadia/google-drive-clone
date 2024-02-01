@@ -3,9 +3,10 @@ import { ref, onMounted } from "vue";
 import Navigation from "@/Components/App/Navigation.vue";
 import SearchForm from "@/Components/App/SearchForm.vue";
 import UserSettingsDropDown from "@/Components/App/UserSettingsDropDown.vue";
-import { FILE_UPLOAD_STARTED, emitter } from "@/event-bus";
+import { FILE_UPLOAD_STARTED, emitter, showErrorDialog } from "@/event-bus";
 import { useForm, usePage } from "@inertiajs/vue3";
 import FormProgress from "@/Components/App/FormProgress.vue";
+import ErrorDialog from "@/Components/ErrorDialog.vue";
 
 const page = usePage();
 const dragOver = ref(false);
@@ -43,7 +44,24 @@ const uploadFiles = (files) => {
         (file) => file.webkitRelativePath
     );
 
-    fileUploadForm.post(route("files.store"));
+    fileUploadForm.post(route("files.store"), {
+        onSuccess: () => {},
+        onError: (errors) => {
+            let message = "";
+
+            if (Object.keys(errors).length > 0) {
+                message = errors[Object.keys(errors)[0]];
+            } else {
+                message = "Error during file upload. Try again after sometime.";
+            }
+
+            showErrorDialog(message);
+        },
+        onFinish: () => {
+            fileUploadForm.clearErrors();
+            fileUploadForm.reset();
+        },
+    });
 };
 </script>
 
@@ -79,6 +97,7 @@ const uploadFiles = (files) => {
     </div>
 
     <FormProgress :form="fileUploadForm" />
+    <ErrorDialog />
 </template>
 
 <style scoped>
