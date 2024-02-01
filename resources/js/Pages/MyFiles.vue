@@ -2,6 +2,7 @@
 import { Link, router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { ChevronRightIcon, HomeIcon } from "@heroicons/vue/20/solid";
+import FileIcon from "@/Components/App/FileIcon.vue";
 
 const { files } = defineProps({
     files: Object,
@@ -73,7 +74,10 @@ const openFolder = (file) => {
                     <td
                         class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
                     >
-                        {{ file.name }}
+                        <div class="flex items-center">
+                            <FileIcon :file="file" />
+                            {{ file.name }}
+                        </div>
                     </td>
                     <td
                         class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
