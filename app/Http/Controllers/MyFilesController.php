@@ -80,7 +80,7 @@ class MyFilesController extends Controller
         $parent = $request->parent;
         $user = $request->user();
 
-        if (!$parent) {
+        if (! $parent) {
             $parent = $this->getRoot();
         }
 
@@ -112,7 +112,6 @@ class MyFilesController extends Controller
      * @param  array  $tree
      * @param  \App\Models\File  $parent
      * @param  \App\Models\User  $user
-     *
      * @return void
      */
     public function saveFileTree($tree, $parent, $user)
@@ -138,12 +137,11 @@ class MyFilesController extends Controller
      * @param  array  $tree
      * @param  \App\Models\File  $parent
      * @param  \App\Models\User  $user
-     *
      * @return void
      */
     public function saveFile($file, $parent, $user)
     {
-        $path = $file->store('/files/'. $user->id);
+        $path = $file->store('/files/'.$user->id);
 
         $model = new File();
         $model->is_folder = false;

@@ -3,8 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\File;
-use App\Http\Requests\ParentIdBaseRequest;
-use Illuminate\Foundation\Http\FormRequest;
 
 class StoreFileRequest extends ParentIdBaseRequest
 {
@@ -41,7 +39,6 @@ class StoreFileRequest extends ParentIdBaseRequest
      * Detect the folder name for the given path.
      *
      * @param  array  $paths
-     *
      * @return string
      */
     public function detectFolderName($paths)
@@ -51,6 +48,7 @@ class StoreFileRequest extends ParentIdBaseRequest
         }
 
         $parts = explode('/', $paths[0]);
+
         return $parts[0];
     }
 
@@ -59,13 +57,12 @@ class StoreFileRequest extends ParentIdBaseRequest
      *
      * @param  array  $filePaths
      * @param  array  $files
-     *
      * @return array
      */
     private function buildFileTree($filePaths, $files)
     {
         $filePaths = array_slice($filePaths, 0, count($files));
-        $filePaths = array_filter($filePaths, fn($f) => $f != null);
+        $filePaths = array_filter($filePaths, fn ($f) => $f != null);
 
         $tree = [];
 
@@ -74,7 +71,7 @@ class StoreFileRequest extends ParentIdBaseRequest
 
             $currentNode = &$tree;
             foreach ($parts as $i => $part) {
-                if (!isset($currentNode[$part])) {
+                if (! isset($currentNode[$part])) {
                     $currentNode[$part] = [];
                 }
 
@@ -104,17 +101,17 @@ class StoreFileRequest extends ParentIdBaseRequest
                 function ($attributes, $value, $fail) {
                     if (! $this->folder_name) {
                         $file = File::query()
-                                ->where('name', $value->getClientOriginalName())
-                                ->where('created_by', auth()->id())
-                                ->where('parent_id', $this->parent_id)
-                                ->whereNull('deleted_at')
-                                ->exists();
+                            ->where('name', $value->getClientOriginalName())
+                            ->where('created_by', auth()->id())
+                            ->where('parent_id', $this->parent_id)
+                            ->whereNull('deleted_at')
+                            ->exists();
 
                         if ($file) {
                             $fail("File {$value->getClientOriginalName()} already exists.");
                         }
                     }
-                }
+                },
             ],
             'folder_name' => [
                 'nullable',
@@ -122,17 +119,17 @@ class StoreFileRequest extends ParentIdBaseRequest
                 function ($attributes, $value, $fail) {
                     if ($value) {
                         $file = File::query()
-                                ->where('name', $value)
-                                ->where('created_by', auth()->id())
-                                ->where('parent_id', $this->parent_id)
-                                ->whereNull('deleted_at')
-                                ->exists();
+                            ->where('name', $value)
+                            ->where('created_by', auth()->id())
+                            ->where('parent_id', $this->parent_id)
+                            ->whereNull('deleted_at')
+                            ->exists();
 
                         if ($file) {
                             $fail("Folder {$value} already exists.");
                         }
                     }
-                }
+                },
             ],
         ]);
     }
