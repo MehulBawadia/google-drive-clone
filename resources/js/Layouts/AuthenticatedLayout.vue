@@ -5,6 +5,7 @@ import SearchForm from "@/Components/App/SearchForm.vue";
 import UserSettingsDropDown from "@/Components/App/UserSettingsDropDown.vue";
 import { FILE_UPLOAD_STARTED, emitter } from "@/event-bus";
 import { useForm, usePage } from "@inertiajs/vue3";
+import FormProgress from "@/Components/App/FormProgress.vue";
 
 const page = usePage();
 const dragOver = ref(false);
@@ -36,7 +37,6 @@ const onDragLeave = () => {
 };
 
 const uploadFiles = (files) => {
-    console.log(files);
     fileUploadForm.parent_id = page.props.rootFolder.id;
     fileUploadForm.files = files;
     fileUploadForm.relative_paths = [...files].map(
@@ -77,6 +77,8 @@ const uploadFiles = (files) => {
             </template>
         </main>
     </div>
+
+    <FormProgress :form="fileUploadForm" />
 </template>
 
 <style scoped>
