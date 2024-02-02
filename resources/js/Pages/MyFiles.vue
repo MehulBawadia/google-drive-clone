@@ -7,6 +7,7 @@ import { ref, onMounted, onUpdated, computed } from "vue";
 import { httpGet } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
+import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
 
 const props = defineProps({
     files: Object,
@@ -132,11 +133,19 @@ onMounted(() => {
                 </li>
             </ol>
 
-            <DeleteFileButton
-                :delete-all="allSelected"
-                :delete-ids="selectedIds"
-                @delete="onDelete"
-            />
+            <div>
+                <DownloadFileButton
+                    :all="allSelected"
+                    :ids="selectedIds"
+                    class="mr-2"
+                />
+
+                <DeleteFileButton
+                    :delete-all="allSelected"
+                    :delete-ids="selectedIds"
+                    @delete="onDelete"
+                />
+            </div>
         </nav>
 
         <div class="flex-1 overflow-auto">
