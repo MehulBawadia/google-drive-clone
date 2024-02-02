@@ -160,7 +160,6 @@ class MyFilesController extends Controller
     /**
      * Temporary delete the files and/or folders.
      *
-     * @param  \App\Http\Requests\DestroyFileRequest  $request
      *
      * @return \Illuminate\Http\RedirectResponse
      */

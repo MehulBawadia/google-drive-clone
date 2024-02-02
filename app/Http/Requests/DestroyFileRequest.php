@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\ParentIdBaseRequest;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class DestroyFileRequest extends ParentIdBaseRequest
@@ -18,9 +16,9 @@ class DestroyFileRequest extends ParentIdBaseRequest
         return array_merge(parent::rules(), [
             'all' => 'nullable|bool',
             'ids.*' => Rule::exists('files', 'id')
-                        ->where(function ($query) {
-                            $query->where('created_by', auth()->id());
-                        }),
+                ->where(function ($query) {
+                    $query->where('created_by', auth()->id());
+                }),
         ]);
     }
 }
