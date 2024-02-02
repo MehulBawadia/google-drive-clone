@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateFolderRequest;
+use App\Http\Requests\DestroyFileRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Resources\FileResource;
 use App\Models\File;
@@ -154,5 +155,32 @@ class MyFilesController extends Controller
         $model->mime = $file->getMimeType();
         $model->size = $file->getSize();
         $parent->appendNode($model);
+    }
+
+    /**
+     * Temporary delete the files and/or folders.
+     *
+     * @param  \App\Http\Requests\DestroyFileRequest  $request
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroy(DestroyFileRequest $request)
+    {
+        $payload = $request->validated();
+        $parent = $request->parent;
+
+        if ($payload['all']) {
+            $children = $parent->children;
+
+            foreach ($children as $child) {
+                $child->delete();
+            }
+        } else {
+            foreach ($payload['ids'] ?? [] as $id) {
+                File::find($id)->delete();
+            }
+        }
+
+        return to_route('myFiles', ['folder' => $parent->path]);
     }
 }
