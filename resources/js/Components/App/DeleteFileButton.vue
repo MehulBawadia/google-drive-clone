@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import { TrashIcon } from "@heroicons/vue/24/outline";
 import ConfirmationDialog from "@/Components/App/ConfirmationDialog.vue";
-import { showErrorDialog } from "@/event-bus";
+import { showErrorDialog, showSuccessNotification } from "@/event-bus";
 
 const props = defineProps({
     deleteAll: {
@@ -53,6 +53,9 @@ const onDeleteConfirm = () => {
     deleteFileForm.delete(route("files.destroy"), {
         onSuccess: () => {
             showConfirmDialog.value = false;
+            showSuccessNotification(
+                "Selected files have been successfully deleted."
+            );
             emit("delete");
         },
     });
