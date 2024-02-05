@@ -1,5 +1,5 @@
 <script setup>
-import { Link, router, useForm } from "@inertiajs/vue3";
+import { Link, router, useForm, usePage } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import {
     ChevronRightIcon,
@@ -28,6 +28,7 @@ const allFiles = ref({
 
 const allSelected = ref(false);
 const selected = ref({});
+const onlyFavourites = ref(false);
 
 const selectedIds = computed(() => {
     return Object.entries(selected.value)
@@ -101,6 +102,16 @@ const toggleFavourite = (file) => {
     });
 };
 
+const showOnlyFavourites = () => {
+    const favourites = usePage().props.favourites;
+
+    if (favourites === true) {
+        return router.get(route("myFiles"));
+    }
+
+    return router.get(route("myFiles"), { favourites: 1 });
+};
+
 onUpdated(() => {
     allFiles.value = {
         data: props.files.data,
@@ -110,6 +121,9 @@ onUpdated(() => {
 
 const loadMoreIntersect = ref(null);
 onMounted(() => {
+    const favourites = usePage().props.favourites;
+    onlyFavourites.value = favourites === true;
+
     const observer = new IntersectionObserver(
         (entries) => {
             entries.forEach((entry) => entry.isIntersecting && loadMore());
@@ -154,6 +168,13 @@ onMounted(() => {
             </ol>
 
             <div>
+                <label>
+                    <Checkbox
+                        v-model:checked="onlyFavourites"
+                        @change="showOnlyFavourites"
+                    />
+                    Only Favorites
+                </label>
                 <DownloadFileButton
                     :all="allSelected"
                     :ids="selectedIds"

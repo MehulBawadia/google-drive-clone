@@ -35,15 +35,21 @@ class MyFilesController extends Controller
             $folder = $this->getRoot();
         }
 
-        $files = File::where([
-            'parent_id' => $folder->id,
-            'created_by' => auth()->id(),
-        ])
+        $favourites = request()->exists('favourites');
+        $query = File::select('files.*')
+            ->where([
+                'parent_id' => $folder->id,
+                'created_by' => auth()->id(),
+            ])
             ->orderBy('is_folder', 'DESC')
-            ->orderBy('created_at', 'DESC')
-            ->orderBy('id', 'DESC')
-            ->with(['starred:id,user_id,file_id,created_at'])
-            ->paginate(10);
+            ->orderBy('files.created_at', 'DESC')
+            ->orderBy('files.id', 'DESC')
+            ->with(['starred:id,user_id,file_id,created_at']);
+        if ($favourites) {
+            $query->join('starred_files', 'starred_files.file_id', '=', 'files.id')
+                ->where('starred_files.user_id', auth()->id());
+        }
+        $files = $query->paginate(10);
 
         $files = FileResource::collection($files);
 
@@ -59,6 +65,7 @@ class MyFilesController extends Controller
             'rootFolder' => $folder,
             'files' => $files,
             'ancestors' => $ancestors,
+            'favourites' => $favourites,
         ]);
     }
 
