@@ -68,6 +68,18 @@ class File extends Model
     }
 
     /**
+     * Marks the file(s) and/or folder(s) as soft deleted.
+     *
+     * @return bool
+     */
+    public function moveToTrash()
+    {
+        $this->deleted_at = now();
+
+        return $this->save();
+    }
+
+    /**
      * Do something with the model events.
      *
      * @return void

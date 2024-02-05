@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateFolderRequest;
 use App\Http\Requests\FileActionsRequest;
 use App\Http\Requests\StoreFileRequest;
+use App\Http\Requests\TrashFileRequest;
 use App\Http\Resources\FileResource;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
@@ -54,6 +55,26 @@ class MyFilesController extends Controller
             'rootFolder' => $folder,
             'files' => $files,
             'ancestors' => $ancestors,
+        ]);
+    }
+
+    /**
+     * Display the trash page.
+     *
+     * @return \Inertia\Inertia
+     */
+    public function trash()
+    {
+        $files = File::onlyTrashed()
+            ->where('created_by', auth()->id())
+            ->orderBy('is_folder', 'DESC')
+            ->orderBy('deleted_at', 'DESC')
+            ->paginate(10);
+
+        $files = FileResource::collection($files);
+
+        return Inertia::render('Trash', [
+            'files' => $files,
         ]);
     }
 
@@ -173,11 +194,11 @@ class MyFilesController extends Controller
             $children = $parent->children;
 
             foreach ($children as $child) {
-                $child->delete();
+                $child->moveToTrash();
             }
         } else {
             foreach ($payload['ids'] ?? [] as $id) {
-                File::find($id)->delete();
+                File::find($id)->moveToTrash();
             }
         }
 
@@ -281,5 +302,30 @@ class MyFilesController extends Controller
                 $zip->addFile(Storage::path($file->storage_path), $ancestors.$file->name);
             }
         }
+    }
+
+    /**
+     * Restore the file and/or folder.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function restore(TrashFileRequest $request)
+    {
+        $payload = $request->validated();
+        $ids = $payload['ids'] ?? [];
+
+        if ($payload['all']) {
+            $children = File::onlyTrashed()->get();
+            foreach ($children as $child) {
+                $child->restore();
+            }
+        } else {
+            $children = File::onlyTrashed()->whereIn('id', $ids)->get();
+            foreach ($children as $child) {
+                $child->restore();
+            }
+        }
+
+        return to_route('trash');
     }
 }
