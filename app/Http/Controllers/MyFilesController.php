@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddToFavouritesRequest;
 use App\Http\Requests\CreateFolderRequest;
 use App\Http\Requests\FileActionsRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\TrashFileRequest;
 use App\Http\Resources\FileResource;
 use App\Models\File;
+use App\Models\StarredFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -39,6 +41,8 @@ class MyFilesController extends Controller
         ])
             ->orderBy('is_folder', 'DESC')
             ->orderBy('created_at', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->with(['starred:id,user_id,file_id,created_at'])
             ->paginate(10);
 
         $files = FileResource::collection($files);
@@ -356,5 +360,33 @@ class MyFilesController extends Controller
         }
 
         return to_route('trash');
+    }
+
+    /**
+     * Add the file(s) or folder(s) to favourites.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function toggleFavourite(AddToFavouritesRequest $request)
+    {
+        $payload = $request->validated();
+
+        $id = $payload['id'];
+        $file = File::find($id);
+
+        $hasFavourited = StarredFile::where('file_id', $file->id)->where('user_id', auth()->id())->first();
+        if (! $hasFavourited) {
+            $data = [
+                'file_id' => $file->id,
+                'user_id' => auth()->id(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+            StarredFile::create($data);
+        } else {
+            $hasFavourited->delete();
+        }
+
+        return back();
     }
 }

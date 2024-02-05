@@ -1,13 +1,19 @@
 <script setup>
-import { Link, router } from "@inertiajs/vue3";
+import { Link, router, useForm } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { ChevronRightIcon, HomeIcon } from "@heroicons/vue/20/solid";
+import {
+    ChevronRightIcon,
+    HomeIcon,
+    StarIcon as StarSolidIcon,
+} from "@heroicons/vue/20/solid";
 import FileIcon from "@/Components/App/FileIcon.vue";
 import { ref, onMounted, onUpdated, computed } from "vue";
-import { httpGet } from "@/Helper/http-helper";
+import { httpPost } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
 import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
+import { StarIcon as StarOutlineIcon } from "@heroicons/vue/24/outline";
+import { showSuccessNotification } from "@/event-bus";
 
 const props = defineProps({
     files: Object,
@@ -42,7 +48,7 @@ const loadMore = () => {
         return;
     }
 
-    httpGet(allFiles.value.next).then((res) => {
+    httpPost(allFiles.value.next).then((res) => {
         allFiles.value.data = [...allFiles.value.data, ...res.data];
         allFiles.value.next = res.links.next;
     });
@@ -79,6 +85,20 @@ const onSelectCheckboxChange = (file) => {
 const onDelete = () => {
     allSelected.value = false;
     selected.value = {};
+};
+
+const toggleFavourite = (file) => {
+    let actionType = "favourited";
+    if (file.is_favourite) {
+        actionType = "unfavourited";
+    }
+
+    httpPost(route("files.toggleFavourite"), { id: file.id }).then(() => {
+        file.is_favourite = !file.is_favourite;
+        showSuccessNotification(
+            `The file has been successfully ${actionType}.`
+        );
+    });
 };
 
 onUpdated(() => {
@@ -162,6 +182,7 @@ onMounted(() => {
                                 @change="onSelectAllChange"
                             />
                         </th>
+                        <th class=""></th>
                         <th class="pl-6 pr-0 py-3 w-7 max-w-7">Name</th>
                         <th class="px-6 py-3">Owner</th>
                         <th class="px-6 py-3">Size</th>
@@ -192,6 +213,23 @@ onMounted(() => {
                                     ($event) => onSelectCheckboxChange(file)
                                 "
                             />
+                        </td>
+                        <td
+                            class="py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
+                        >
+                            <div
+                                class="flex items-center"
+                                @click.stop.prevent="toggleFavourite(file)"
+                            >
+                                <StarOutlineIcon
+                                    v-if="!file.is_favourite"
+                                    class="w-4 h-4"
+                                />
+                                <StarSolidIcon
+                                    v-else
+                                    class="w-4 h-4 text-yellow-500"
+                                />
+                            </div>
                         </td>
                         <td
                             class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"

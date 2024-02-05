@@ -36,6 +36,17 @@ class File extends Model
     }
 
     /**
+     * A file has only one favorite record.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function starred()
+    {
+        return $this->hasOne(StarredFile::class, 'file_id', 'id')
+            ->where('user_id', auth()->id());
+    }
+
+    /**
      * Custom attribute for owner.
      */
     public function owner(): Attribute

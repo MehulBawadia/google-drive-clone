@@ -40,6 +40,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/trash', [MyFilesController::class, 'trash'])->name('trash');
     Route::post('/files/restore', [MyFilesController::class, 'restore'])->name('files.restore');
     Route::delete('/files/delete-forever', [MyFilesController::class, 'deleteForever'])->name('files.deleteForever');
+
+    Route::post('/files/toggle-favourite', [MyFilesController::class, 'toggleFavourite'])->name('files.toggleFavourite');
 });
 
 Route::middleware('auth')->group(function () {
