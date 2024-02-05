@@ -42,10 +42,10 @@ const closeConfirmDialog = () => {
 };
 
 const onDeleteConfirm = () => {
-    console.log("Process the deleting of files...");
     deleteFileForm.parent_id = page.props.rootFolder.id;
     if (props.deleteAll) {
         deleteFileForm.all = true;
+        deleteFileForm.ids = [];
     } else {
         deleteFileForm.ids = props.deleteIds;
     }

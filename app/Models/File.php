@@ -80,6 +80,34 @@ class File extends Model
     }
 
     /**
+     * Delete forever the records that are soft deleted.
+     *
+     * @return void
+     */
+    public function deleteForever()
+    {
+        $this->deleteFilesFromStorage([$this]);
+        $this->forceDelete();
+    }
+
+    /**
+     * Delete the files that are stored locally for the model.
+     *
+     * @param  array  $files
+     * @return void
+     */
+    public function deleteFilesFromStorage($files)
+    {
+        foreach ($files as $file) {
+            if ($file->is_folder) {
+                $this->deleteFilesFromStorage($file->children);
+            } else {
+                Storage::delete($file->storage_path);
+            }
+        }
+    }
+
+    /**
      * Do something with the model events.
      *
      * @return void

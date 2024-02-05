@@ -8,6 +8,7 @@ import { httpGet } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
 import RestoreFileButton from "@/Components/App/RestoreFileButton.vue";
+import DeleteForeverButton from "@/Components/App/DeleteForeverButton.vue";
 
 const props = defineProps({
     files: Object,
@@ -76,7 +77,7 @@ const onSelectCheckboxChange = (file) => {
     }
 };
 
-const onDelete = () => {
+const resetForm = () => {
     allSelected.value = false;
     selected.value = {};
 };
@@ -112,12 +113,13 @@ onMounted(() => {
                 <RestoreFileButton
                     :all-selected="allSelected"
                     :selected-ids="selectedIds"
+                    @restore="resetForm"
                 />
 
-                <DeleteFileButton
-                    :delete-all="allSelected"
-                    :delete-ids="selectedIds"
-                    @delete="onDelete"
+                <DeleteForeverButton
+                    :all-selected="allSelected"
+                    :selected-ids="selectedIds"
+                    @deleteForever="resetForm"
                 />
             </div>
         </nav>

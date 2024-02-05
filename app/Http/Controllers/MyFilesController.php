@@ -73,6 +73,10 @@ class MyFilesController extends Controller
 
         $files = FileResource::collection($files);
 
+        if (request()->wantsJson()) {
+            return $files;
+        }
+
         return Inertia::render('Trash', [
             'files' => $files,
         ]);
@@ -323,6 +327,31 @@ class MyFilesController extends Controller
             $children = File::onlyTrashed()->whereIn('id', $ids)->get();
             foreach ($children as $child) {
                 $child->restore();
+            }
+        }
+
+        return to_route('trash');
+    }
+
+    /**
+     * Permanently delete the file and/or folder.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteForever(TrashFileRequest $request)
+    {
+        $payload = $request->validated();
+        $ids = $payload['ids'] ?? [];
+
+        if ($payload['all']) {
+            $children = File::onlyTrashed()->get();
+            foreach ($children as $child) {
+                $child->deleteForever();
+            }
+        } else {
+            $children = File::onlyTrashed()->whereIn('id', $ids)->get();
+            foreach ($children as $child) {
+                $child->deleteForever();
             }
         }
 
