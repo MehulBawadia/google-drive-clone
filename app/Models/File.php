@@ -119,6 +119,36 @@ class File extends Model
     }
 
     /**
+     * Get the files/folders that are shared with me.
+     * But returns only the query builder instance.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function getSharedWithMe()
+    {
+        return self::select('files.*')
+            ->join('file_shares', 'file_shares.file_id', '=', 'files.id')
+            ->where('file_shares.user_id', auth()->id())
+            ->orderBy('file_shares.created_at', 'DESC')
+            ->orderBy('files.id', 'DESC');
+    }
+
+    /**
+     * Get the files/folders that are shared by me.
+     * But returns only the query builder instance.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function getSharedByMe()
+    {
+        return self::select('files.*')
+            ->join('file_shares', 'file_shares.file_id', '=', 'files.id')
+            ->where('files.created_by', auth()->id())
+            ->orderBy('file_shares.created_at', 'DESC')
+            ->orderBy('files.id', 'DESC');
+    }
+
+    /**
      * Do something with the model events.
      *
      * @return void

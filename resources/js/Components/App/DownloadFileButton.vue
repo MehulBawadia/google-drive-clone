@@ -14,6 +14,8 @@ const props = defineProps({
         type: Array,
         required: false,
     },
+    sharedWithMe: false,
+    sharedByMe: false,
 });
 
 const page = usePage();
@@ -24,7 +26,9 @@ const download = () => {
     }
 
     const urlParams = new URLSearchParams();
-    urlParams.append("parent_id", page.props.rootFolder.id);
+    if (page.props.rootFolder?.id) {
+        urlParams.append("parent_id", page.props.rootFolder.id);
+    }
     if (props.all) {
         urlParams.append("all", props.all ? 1 : 0);
     } else {
@@ -33,16 +37,21 @@ const download = () => {
         }
     }
 
-    httpGet(`${route("files.download")}?${urlParams.toString()}`).then(
-        (res) => {
-            if (!res.url) return;
+    let url = route("files.download");
+    if (props.sharedWithMe) {
+        url = route("files.downloadSharedWithMe");
+    } else if (props.sharedByMe) {
+        url = route("files.downloadSharedByMe");
+    }
 
-            const alink = document.createElement("a");
-            alink.download = res.filename;
-            alink.href = res.url;
-            alink.click();
-        }
-    );
+    httpGet(`${url}?${urlParams.toString()}`).then((res) => {
+        if (!res.url) return;
+
+        const alink = document.createElement("a");
+        alink.download = res.filename;
+        alink.href = res.url;
+        alink.click();
+    });
 };
 </script>
 
