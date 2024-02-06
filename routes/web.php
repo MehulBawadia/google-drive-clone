@@ -39,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/trash', [MyFilesController::class, 'trash'])->name('trash');
     Route::get('/shared-with-me', [MyFilesController::class, 'sharedWithMe'])->name('sharedWithMe');
+    Route::get('/shared-by-me', [MyFilesController::class, 'sharedByMe'])->name('sharedByMe');
     Route::post('/files/restore', [MyFilesController::class, 'restore'])->name('files.restore');
     Route::delete('/files/delete-forever', [MyFilesController::class, 'deleteForever'])->name('files.deleteForever');
 

@@ -481,4 +481,28 @@ class MyFilesController extends Controller
             'files' => $files,
         ]);
     }
+
+    /**
+     * Display the files/folders list that are shared by me.
+     *
+     * @return \Inertia\Inertia
+     */
+    public function sharedByMe()
+    {
+        $files = File::join('file_shares', 'file_shares.file_id', '=', 'files.id')
+            ->where('files.created_by', auth()->id())
+            ->orderBy('file_shares.created_at', 'DESC')
+            ->orderBy('files.id', 'DESC')
+            ->paginate(10);
+
+        $files = FileResource::collection($files);
+
+        if (request()->wantsJson()) {
+            return $files;
+        }
+
+        return Inertia::render('SharedByMe', [
+            'files' => $files,
+        ]);
+    }
 }
