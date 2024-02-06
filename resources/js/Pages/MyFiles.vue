@@ -167,14 +167,16 @@ onMounted(() => {
                 </li>
             </ol>
 
-            <div>
-                <label>
+            <div class="flex items-center">
+                <label class="flex items-center mr-3">
                     <Checkbox
                         v-model:checked="onlyFavourites"
                         @change="showOnlyFavourites"
+                        class="mr-2"
                     />
                     Only Favorites
                 </label>
+
                 <DownloadFileButton
                     :all="allSelected"
                     :ids="selectedIds"
