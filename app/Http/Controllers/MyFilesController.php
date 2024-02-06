@@ -9,10 +9,12 @@ use App\Http\Requests\ShareFilesRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\TrashFileRequest;
 use App\Http\Resources\FileResource;
+use App\Mail\ShareFilesMail;
 use App\Models\File;
 use App\Models\FileShare;
 use App\Models\StarredFile;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -449,6 +451,9 @@ class MyFilesController extends Controller
             ];
         }
         FileShare::insert($data);
+
+        Mail::to($user)
+            ->send(new ShareFilesMail($user, auth()->user(), $files));
 
         return back();
     }
