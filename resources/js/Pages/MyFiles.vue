@@ -1,5 +1,5 @@
 <script setup>
-import { Link, router, useForm, usePage } from "@inertiajs/vue3";
+import { Head, Link, router, useForm, usePage } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import {
     ChevronRightIcon,
@@ -139,6 +139,8 @@ onMounted(() => {
 
 <template>
     <AuthenticatedLayout>
+        <Head title="My Files" />
+
         <nav class="flex items-center justify-between p-1 mb-3">
             <ol class="inline-flex items-center space-x-1">
                 <li
