@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddToFavouritesRequest;
 use App\Http\Requests\CreateFolderRequest;
 use App\Http\Requests\FileActionsRequest;
+use App\Http\Requests\ShareFilesRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\TrashFileRequest;
 use App\Http\Resources\FileResource;
 use App\Models\File;
+use App\Models\FileShare;
 use App\Models\StarredFile;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -393,6 +396,59 @@ class MyFilesController extends Controller
         } else {
             $hasFavourited->delete();
         }
+
+        return back();
+    }
+
+    /**
+     * Share the selected file(s) and/or folder(s).
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function share(ShareFilesRequest $request)
+    {
+        $payload = $request->validated();
+        $parent = $request->parent;
+
+        $all = $payload['all'] ?? false;
+        $ids = $payload['ids'] ?? [];
+        $email = $payload['email'];
+
+        $user = User::where('email', $email)->first();
+        if (! $user) {
+            return back();
+        }
+
+        if (! $all && empty($ids)) {
+            return ['message' => 'Please select at least file or folder to share.'];
+        }
+
+        if ($all) {
+            $files = $parent->children;
+        } else {
+            $files = File::find($ids);
+        }
+
+        $selectedFileIds = $files->pluck('id')->toArray();
+        $sharedFiles = FileShare::whereIn('file_id', $selectedFileIds)
+            ->where('user_id', $user->id)
+            ->pluck('file_id')
+            ->toArray();
+
+        $data = [];
+        foreach ($files as $file) {
+            if (in_array($file->id, $sharedFiles)) {
+                continue;
+            }
+
+            $data[] = [
+                'file_id' => $file->id,
+                'user_id' => $user->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+        FileShare::insert($data);
 
         return back();
     }

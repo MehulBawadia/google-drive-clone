@@ -42,6 +42,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/files/delete-forever', [MyFilesController::class, 'deleteForever'])->name('files.deleteForever');
 
     Route::post('/files/toggle-favourite', [MyFilesController::class, 'toggleFavourite'])->name('files.toggleFavourite');
+    Route::post('/files/share', [MyFilesController::class, 'share'])->name('files.share');
 });
 
 Route::middleware('auth')->group(function () {

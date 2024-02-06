@@ -14,6 +14,7 @@ import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
 import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
 import { StarIcon as StarOutlineIcon } from "@heroicons/vue/24/outline";
 import { showSuccessNotification } from "@/event-bus";
+import ShareFileButton from "@/Components/App/ShareFileButton.vue";
 
 const props = defineProps({
     files: Object,
@@ -178,6 +179,11 @@ onMounted(() => {
                     />
                     Only Favorites
                 </label>
+
+                <ShareFileButton
+                    :all-selected="allSelected"
+                    :selected-ids="selectedIds"
+                />
 
                 <DownloadFileButton
                     :all="allSelected"
