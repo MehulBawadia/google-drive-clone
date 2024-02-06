@@ -489,6 +489,37 @@ class MyFilesController extends Controller
     }
 
     /**
+     * Donwload the file(s) or folder(s) that are shared by me.
+     *
+     * @return array
+     */
+    public function downloadSharedByMe(FileActionsRequest $request)
+    {
+        $payload = $request->validated();
+
+        $all = $payload['all'] ?? false;
+        $ids = $payload['ids'] ?? [];
+
+        if (! $all && empty($ids)) {
+            return ['message' => 'please select file to download'];
+        }
+
+        $zipFileName = 'shared-by-me';
+        if ($all) {
+            $files = File::getSharedByMe()->get();
+            $url = $this->createZip($files);
+            $filename = $zipFileName.'.zip';
+        } else {
+            [$url, $filename] = $this->getDownloadUrl($ids, $zipFileName);
+        }
+
+        return [
+            'url' => $url,
+            'filename' => $filename,
+        ];
+    }
+
+    /**
      * Display the files/folders list that are shared by me.
      *
      * @return \Inertia\Inertia

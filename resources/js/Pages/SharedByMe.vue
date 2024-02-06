@@ -5,6 +5,7 @@ import FileIcon from "@/Components/App/FileIcon.vue";
 import { ref, onMounted, onUpdated, computed } from "vue";
 import { httpGet } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
+import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
 
 const props = defineProps({
     files: Object,
@@ -97,7 +98,14 @@ onMounted(() => {
         <Head title="Shared By Me" />
 
         <nav class="flex items-center justify-end p-1 mb-3">
-            <div class="space-x-4"></div>
+            <div class="space-x-4">
+                <DownloadFileButton
+                    :all="allSelected"
+                    :ids="selectedIds"
+                    :shared-by-me="true"
+                    class="mr-2"
+                />
+            </div>
         </nav>
 
         <div class="flex-1 overflow-auto">
