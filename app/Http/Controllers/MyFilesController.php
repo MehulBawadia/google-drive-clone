@@ -86,11 +86,17 @@ class MyFilesController extends Controller
      */
     public function trash()
     {
-        $files = File::onlyTrashed()
+        $search = request()->search;
+        $query = File::onlyTrashed()
             ->where('created_by', auth()->id())
             ->orderBy('is_folder', 'DESC')
-            ->orderBy('deleted_at', 'DESC')
-            ->paginate(10);
+            ->orderBy('deleted_at', 'DESC');
+
+        if ($search) {
+            $query->where('name', 'LIKE', "%{$search}%");
+        }
+
+        $files = $query->paginate(10);
 
         $files = FileResource::collection($files);
 
@@ -100,6 +106,7 @@ class MyFilesController extends Controller
 
         return Inertia::render('Trash', [
             'files' => $files,
+            'search' => $search,
         ]);
     }
 
