@@ -28,6 +28,8 @@ class MyFilesController extends Controller
      */
     public function index(?string $folder = null)
     {
+        $search = request()->search;
+
         if ($folder) {
             $folder = File::query()
                 ->where([
@@ -42,14 +44,16 @@ class MyFilesController extends Controller
 
         $favourites = request()->exists('favourites');
         $query = File::select('files.*')
-            ->where([
-                'parent_id' => $folder->id,
-                'created_by' => auth()->id(),
-            ])
+            ->where('created_by', auth()->id())
             ->orderBy('is_folder', 'DESC')
             ->orderBy('files.created_at', 'DESC')
             ->orderBy('files.id', 'DESC')
             ->with(['starred:id,user_id,file_id,created_at']);
+        if ($search) {
+            $query->where('name', 'LIKE', "%{$search}%");
+        } else {
+            $query->where('parent_id', $folder->id);
+        }
         if ($favourites) {
             $query->join('starred_files', 'starred_files.file_id', '=', 'files.id')
                 ->where('starred_files.user_id', auth()->id());
@@ -71,6 +75,7 @@ class MyFilesController extends Controller
             'files' => $files,
             'ancestors' => $ancestors,
             'favourites' => $favourites,
+            'search' => $search,
         ]);
     }
 

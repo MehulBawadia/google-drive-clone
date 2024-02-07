@@ -13,7 +13,7 @@ import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
 import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
 import { StarIcon as StarOutlineIcon } from "@heroicons/vue/24/outline";
-import { showSuccessNotification } from "@/event-bus";
+import { ON_SEARCH, emitter, showSuccessNotification } from "@/event-bus";
 import ShareFileButton from "@/Components/App/ShareFileButton.vue";
 
 const props = defineProps({
@@ -121,9 +121,15 @@ onUpdated(() => {
 });
 
 const loadMoreIntersect = ref(null);
+const page = usePage();
+let search = ref("");
 onMounted(() => {
-    const favourites = usePage().props.favourites;
+    const favourites = page.props.favourites;
     onlyFavourites.value = favourites === true;
+    search.value = page.props.search ?? "";
+    emitter.on(ON_SEARCH, (value) => {
+        search.value = value;
+    });
 
     const observer = new IntersectionObserver(
         (entries) => {
@@ -215,6 +221,7 @@ onMounted(() => {
                         </th>
                         <th class=""></th>
                         <th class="pl-6 pr-0 py-3 w-7 max-w-7">Name</th>
+                        <th class="px-6 py-3" v-if="search">Path</th>
                         <th class="px-6 py-3">Owner</th>
                         <th class="px-6 py-3">Size</th>
                         <th class="px-6 py-3">Last Modified</th>
@@ -269,6 +276,12 @@ onMounted(() => {
                                 <FileIcon :file="file" />
                                 {{ file.name }}
                             </div>
+                        </td>
+                        <td
+                            v-if="search"
+                            class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
+                        >
+                            {{ file.path }}
                         </td>
                         <td
                             class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"

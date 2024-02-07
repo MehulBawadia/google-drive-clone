@@ -6,6 +6,8 @@ export const SHOW_ERROR_DIALOG = "SHOW_ERROR_DIALOG";
 
 export const SHOW_NOTIFICATION = "SHOW_NOTIFICATION";
 
+export const ON_SEARCH = "ON_SEARCH";
+
 export const emitter = mitt();
 
 export const showErrorDialog = (message) => {
