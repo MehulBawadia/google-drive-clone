@@ -35,6 +35,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             '_csrf_token' => csrf_token(),
+            'current_route' => request()->route()->getName(),
         ];
     }
 }
