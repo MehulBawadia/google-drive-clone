@@ -543,8 +543,12 @@ class MyFilesController extends Controller
      */
     public function sharedByMe()
     {
-        $files = File::getSharedByMe()
-            ->paginate(10);
+        $search = request()->search;
+        $query = File::getSharedByMe();
+        if ($search) {
+            $query->where('name', 'LIKE', "%{$search}%");
+        }
+        $files = $query->paginate(10);
 
         $files = FileResource::collection($files);
 
@@ -554,6 +558,7 @@ class MyFilesController extends Controller
 
         return Inertia::render('SharedByMe', [
             'files' => $files,
+            'search' => $search,
         ]);
     }
 
