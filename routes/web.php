@@ -34,17 +34,20 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/my-files/{folder?}', [FileController::class, 'index'])->where('folder', '(.*)')->name('myFiles');
     Route::post('/folder/create', [FileController::class, 'createFolder'])->name('folder.create');
-    Route::post('/files', [FileController::class, 'storeFiles'])->name('files.store');
-    Route::delete('/files', [FileController::class, 'destroy'])->name('files.destroy');
 
     Route::get('/trash', [FileController::class, 'trash'])->name('trash');
     Route::get('/shared-with-me', [FileController::class, 'sharedWithMe'])->name('sharedWithMe');
     Route::get('/shared-by-me', [FileController::class, 'sharedByMe'])->name('sharedByMe');
-    Route::post('/files/restore', [FileController::class, 'restore'])->name('files.restore');
-    Route::delete('/files/delete-forever', [FileController::class, 'deleteForever'])->name('files.deleteForever');
 
-    Route::post('/files/toggle-favourite', [FileController::class, 'toggleFavourite'])->name('files.toggleFavourite');
-    Route::post('/files/share', [FileController::class, 'share'])->name('files.share');
+    Route::name('files')->prefix('files')->controller(FileController::class)->group(function () {
+        Route::post('/', 'storeFiles')->name('.store');
+        Route::delete('/', 'destroy')->name('.destroy');
+        Route::post('/restore', 'restore')->name('.restore');
+        Route::delete('/delete-forever', 'deleteForever')->name('.deleteForever');
+
+        Route::post('share', 'share')->name('.share');
+        Route::post('/toggle-favourite', 'toggleFavourite')->name('.toggleFavourite');
+    });
 
     Route::name('files')->prefix('files')->controller(DownloadController::class)->group(function () {
         Route::get('/download', 'fromMyFiles')->name('.download');
