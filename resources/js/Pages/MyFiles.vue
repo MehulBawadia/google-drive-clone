@@ -8,7 +8,7 @@ import {
 } from "@heroicons/vue/20/solid";
 import FileIcon from "@/Components/App/FileIcon.vue";
 import { ref, onMounted, onUpdated, computed } from "vue";
-import { httpPost } from "@/Helper/http-helper";
+import { httpGet, httpPost } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
 import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
@@ -50,7 +50,7 @@ const loadMore = () => {
         return;
     }
 
-    httpPost(allFiles.value.next).then((res) => {
+    httpGet(allFiles.value.next).then((res) => {
         allFiles.value.data = [...allFiles.value.data, ...res.data];
         allFiles.value.next = res.links.next;
     });
