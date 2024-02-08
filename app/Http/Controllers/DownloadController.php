@@ -52,12 +52,43 @@ class DownloadController extends Controller
         $ids = $payload['ids'] ?? [];
 
         if (! $all && empty($ids)) {
-            return ['message' => 'please select file to download'];
+            return ['message' => 'Please select at least one file or one folder to download.'];
         }
 
         $zipFileName = 'shared-with-me';
         if ($all) {
             $files = File::getSharedWithMe()->get();
+            $url = $this->createZip($files);
+            $filename = $zipFileName.'.zip';
+        } else {
+            [$url, $filename] = $this->getDownloadUrl($ids, $zipFileName);
+        }
+
+        return [
+            'url' => $url,
+            'filename' => $filename,
+        ];
+    }
+
+    /**
+     * Donwload the file(s) or folder(s) from shared by me page.
+     *
+     * @return array
+     */
+    public function sharedByMe(FileActionsRequest $request)
+    {
+        $payload = $request->validated();
+
+        $all = $payload['all'] ?? false;
+        $ids = $payload['ids'] ?? [];
+
+        if (! $all && empty($ids)) {
+            return ['message' => 'Please select at least one file or one folder to download.'];
+        }
+
+        $zipFileName = 'shared-by-me';
+        if ($all) {
+            $files = File::getSharedByMe()->get();
             $url = $this->createZip($files);
             $filename = $zipFileName.'.zip';
         } else {
