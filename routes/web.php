@@ -36,7 +36,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/folder/create', [FileController::class, 'createFolder'])->name('folder.create');
     Route::post('/files', [FileController::class, 'storeFiles'])->name('files.store');
     Route::delete('/files', [FileController::class, 'destroy'])->name('files.destroy');
-    Route::get('/files/download-shared-with-me', [FileController::class, 'downloadSharedWithMe'])->name('files.downloadSharedWithMe');
     Route::get('/files/download-shared-by-me', [FileController::class, 'downloadSharedByMe'])->name('files.downloadSharedByMe');
 
     Route::get('/trash', [FileController::class, 'trash'])->name('trash');
@@ -50,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::name('files')->prefix('files')->controller(DownloadController::class)->group(function () {
         Route::get('/download', 'fromMyFiles')->name('.download');
+        Route::get('/download/shared-with-me', 'sharedWithMe')->name('.downloadSharedWithMe');
     });
 });
 

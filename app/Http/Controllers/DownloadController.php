@@ -40,6 +40,37 @@ class DownloadController extends Controller
     }
 
     /**
+     * Donwload the file(s) or folder(s) from shared with me page.
+     *
+     * @return array
+     */
+    public function sharedWithMe(FileActionsRequest $request)
+    {
+        $payload = $request->validated();
+
+        $all = $payload['all'] ?? false;
+        $ids = $payload['ids'] ?? [];
+
+        if (! $all && empty($ids)) {
+            return ['message' => 'please select file to download'];
+        }
+
+        $zipFileName = 'shared-with-me';
+        if ($all) {
+            $files = File::getSharedWithMe()->get();
+            $url = $this->createZip($files);
+            $filename = $zipFileName.'.zip';
+        } else {
+            [$url, $filename] = $this->getDownloadUrl($ids, $zipFileName);
+        }
+
+        return [
+            'url' => $url,
+            'filename' => $filename,
+        ];
+    }
+
+    /**
      * Add the given files into the provided zip archive.
      *
      * @param  \ZipArchive  $zip
