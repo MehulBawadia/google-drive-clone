@@ -32,12 +32,14 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/my-files/{folder?}', [FileController::class, 'index'])->where('folder', '(.*)')->name('myFiles');
-    Route::post('/folder/create', [FileController::class, 'createFolder'])->name('folder.create');
+    Route::controller(FileController::class)->group(function () {
+        Route::get('/my-files/{folder?}', 'index')->where('folder', '(.*)')->name('myFiles');
+        Route::get('/shared-with-me', 'sharedWithMe')->name('sharedWithMe');
+        Route::get('/shared-by-me', 'sharedByMe')->name('sharedByMe');
+        Route::get('/trash', 'trash')->name('trash');
 
-    Route::get('/trash', [FileController::class, 'trash'])->name('trash');
-    Route::get('/shared-with-me', [FileController::class, 'sharedWithMe'])->name('sharedWithMe');
-    Route::get('/shared-by-me', [FileController::class, 'sharedByMe'])->name('sharedByMe');
+        Route::post('/folder/create', 'createFolder')->name('folder.create');
+    });
 
     Route::name('files')->prefix('files')->controller(FileController::class)->group(function () {
         Route::post('/', 'storeFiles')->name('.store');
