@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-class MyFilesController extends Controller
+class FileController extends Controller
 {
     /**
      * Display the My Files page.
