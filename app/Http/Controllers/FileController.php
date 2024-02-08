@@ -15,8 +15,6 @@ use App\Models\FileShare;
 use App\Models\StarredFile;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class FileController extends Controller
@@ -235,83 +233,6 @@ class FileController extends Controller
         }
 
         return to_route('myFiles', ['folder' => $parent->path]);
-    }
-
-    /**
-     * Donwload the file(s) or folder(s).
-     *
-     * @return array
-     */
-    public function download(FileActionsRequest $request)
-    {
-        $payload = $request->validated();
-        $parent = $request->parent;
-
-        $all = $payload['all'] ?? false;
-        $ids = $payload['ids'] ?? [];
-
-        if (! $all && empty($ids)) {
-            return ['message' => 'please select file to download'];
-        }
-
-        if ($all) {
-            $url = $this->createZip($parent->children);
-            $filename = $parent->name.'.zip';
-        } else {
-            [$url, $filename] = $this->getDownloadUrl($ids, $parent->name);
-        }
-
-        return [
-            'url' => $url,
-            'filename' => $filename,
-        ];
-    }
-
-    /**
-     * Create the zip containing files and/or folders that the user
-     * has requested to download.
-     *
-     * @param  array  $files
-     * @return string
-     */
-    public function createZip($files)
-    {
-        $zipPath = 'zip/'.Str::random().'.zip';
-        $publicPath = "public/$zipPath";
-
-        if (! is_dir(dirname($publicPath))) {
-            Storage::makeDirectory(dirname($publicPath));
-        }
-
-        $zipFile = Storage::path($publicPath);
-
-        $zip = new \ZipArchive();
-        if ($zip->open($zipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
-            $this->addFilesToZip($zip, $files);
-        }
-
-        $zip->close();
-
-        return asset(Storage::url($zipPath));
-    }
-
-    /**
-     * Add the given files into the provided zip archive.
-     *
-     * @param  \ZipArchive  $zip
-     * @param  array  $files
-     * @param  string  $ancestors
-     * @return void
-     */
-    private function addFilesToZip($zip, $files, $ancestors = '')
-    {
-        foreach ($files as $file) {
-            if ($file->is_folder) {
-                $this->addFilesToZip($zip, $file->children, $ancestors.$file->name.'/');
-            } else {
-                $zip->addFile(Storage::path($file->storage_path), $ancestors.$file->name);
-            }
-        }
     }
 
     /**
@@ -560,39 +481,5 @@ class FileController extends Controller
             'files' => $files,
             'search' => $search,
         ]);
-    }
-
-    /**
-     * Get the download url and file name.
-     *
-     * @return array
-     */
-    public function getDownloadUrl(array $ids, string $zipName)
-    {
-        if (count($ids) === 1) {
-            $file = File::find($ids[0]);
-            if ($file->is_folder) {
-                if ($file->children->count() === 0) {
-                    return ['message' => 'The folder is empty.'];
-                }
-
-                $url = $this->createZip($file->children);
-                $filename = $file->name.'.zip';
-            } else {
-                $destination = 'public/'.pathinfo($file->storage_path, PATHINFO_BASENAME);
-                Storage::copy($file->storage_path, $destination);
-
-                $url = asset(Storage::url($destination));
-                $filename = $file->name;
-            }
-        } else {
-            $files = File::query()
-                ->whereIn('id', $ids)
-                ->get();
-            $url = $this->createZip($files);
-            $filename = $zipName.'.zip';
-        }
-
-        return [$url, $filename];
     }
 }
