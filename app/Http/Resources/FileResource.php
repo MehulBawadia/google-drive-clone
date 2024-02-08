@@ -47,7 +47,7 @@ class FileResource extends JsonResource
     /**
      * Get the total size in bytes for the given file or folder.
      *
-     * @param \App\Models\File  $content
+     * @param  \App\Models\File  $content
      * @return int
      */
     public function getTotalSize($content)
