@@ -158,7 +158,7 @@ onMounted(() => {
                     <Link
                         v-if="!ancestor.parent_id"
                         :href="route('myFiles')"
-                        class="flex items-center text-sm font-medium text-gray-700 hover:text-blue-600"
+                        class="flex items-center font-medium text-gray-700 hover:text-blue-600"
                     >
                         <HomeIcon class="w-4 h-4 mr-1" />
                         My Files
@@ -168,7 +168,7 @@ onMounted(() => {
                         <ChevronRightIcon class="w-5 h-5" />
                         <Link
                             :href="route('myFiles', { folder: ancestor.path })"
-                            class="text-sm font-medium text-gray-700 hover:text-blue-600"
+                            class="font-medium text-gray-700 hover:text-blue-600"
                         >
                             {{ ancestor.name }}
                         </Link>
