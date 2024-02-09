@@ -97,7 +97,18 @@ onMounted(() => {
     <AuthenticatedLayout>
         <Head title="Shared By Me" />
 
-        <nav class="flex items-center justify-end p-1 mb-3">
+        <nav class="flex items-center justify-between p-1 mb-3">
+            <ol class="inline-flex items-center space-x-1">
+                <li class="inline-flex items-center">
+                    <Link
+                        :href="route('sharedByMe')"
+                        class="flex items-center font-medium text-gray-700 hover:text-blue-600"
+                    >
+                        Shared By Me
+                    </Link>
+                </li>
+            </ol>
+
             <div class="space-x-4">
                 <DownloadFileButton
                     :all="allSelected"
