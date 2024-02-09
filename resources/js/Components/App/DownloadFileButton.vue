@@ -3,6 +3,7 @@ import { useForm, usePage } from "@inertiajs/vue3";
 import { ArrowDownCircleIcon } from "@heroicons/vue/24/outline";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import { httpGet } from "@/Helper/http-helper";
+import { computed } from "vue";
 
 const props = defineProps({
     all: {
@@ -19,6 +20,10 @@ const props = defineProps({
 });
 
 const page = usePage();
+
+const btnDisabled = computed(() => {
+    return !props.all && !props.ids.length;
+});
 
 const download = () => {
     if (!props.all && !props.ids.length) {
@@ -56,7 +61,11 @@ const download = () => {
 </script>
 
 <template>
-    <PrimaryButton @click="download">
+    <PrimaryButton
+        @click="download"
+        :disabled="btnDisabled"
+        :class="btnDisabled ? 'disabled:opacity-50 cursor-not-allowed' : ''"
+    >
         <ArrowDownCircleIcon class="w-4 h-4 mr-2" /> Download
     </PrimaryButton>
 </template>
