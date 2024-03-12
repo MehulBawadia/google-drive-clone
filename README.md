@@ -18,6 +18,10 @@ php artisan serve --host=localhost
 npm run dev
 ```
 
+#### Live Demo
+
+You can check the [live demo here](https://gdstore.bmehul.com)
+
 #### Notes
 
 Optionally, increase the following sizes in your php.ini config file
