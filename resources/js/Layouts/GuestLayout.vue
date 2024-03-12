@@ -22,5 +22,7 @@ import { Link } from "@inertiajs/vue3";
         >
             <slot />
         </div>
+
+        <slot name="registerLink"></slot>
     </div>
 </template>
