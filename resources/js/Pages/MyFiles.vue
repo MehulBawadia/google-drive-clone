@@ -7,7 +7,7 @@ import {
     StarIcon as StarSolidIcon,
 } from "@heroicons/vue/20/solid";
 import FileIcon from "@/Components/App/FileIcon.vue";
-import { ref, onMounted, onUpdated, computed } from "vue";
+import { ref, onMounted, onUpdated, onUnmounted, computed } from "vue";
 import { httpGet, httpPost } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
@@ -113,6 +113,20 @@ const showOnlyFavourites = () => {
     return router.get(route("myFiles"), { favourites: 1 });
 };
 
+const goBack = () => {
+    const ancestors = props.ancestors.data;
+    
+    if (ancestors.length > 1) {
+        // Jika ada lebih dari 1 ancestor, navigasi ke parent (ancestor kedua terakhir)
+        const parentFolder = ancestors[ancestors.length - 2];
+        router.visit(route("myFiles", { folder: parentFolder.path }));
+    } else if (ancestors.length === 1) {
+        // Jika hanya ada 1 ancestor (root), navigasi ke my files root
+        router.visit(route("myFiles"));
+    }
+    // Jika ancestors.length === 0, sudah di root, tidak melakukan apa-apa
+};
+
 onUpdated(() => {
     allFiles.value = {
         data: props.files.data,
@@ -129,6 +143,21 @@ onMounted(() => {
     search.value = page.props.search ?? "";
     emitter.on(ON_SEARCH, (value) => {
         search.value = value;
+    });
+
+    // Event listener untuk keyboard backspace
+    const handleKeydown = (event) => {
+        if (event.key === 'Backspace' && !event.target.matches('input, textarea')) {
+            event.preventDefault();
+            goBack();
+        }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+
+    // Cleanup event listener saat komponen di-unmount
+    onUnmounted(() => {
+        document.removeEventListener('keydown', handleKeydown);
     });
 
     const observer = new IntersectionObserver(
