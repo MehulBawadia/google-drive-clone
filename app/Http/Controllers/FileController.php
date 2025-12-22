@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddToFavouritesRequest;
 use App\Http\Requests\CreateFolderRequest;
 use App\Http\Requests\FileActionsRequest;
+use App\Http\Requests\RenameFileRequest;
 use App\Http\Requests\ShareFilesRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\TrashFileRequest;
@@ -311,6 +312,38 @@ class FileController extends Controller
         }
 
         return back();
+    }
+
+    /**
+     * Rename a file or folder.
+     *
+     * @param RenameFileRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function rename(RenameFileRequest $request)
+    {
+        $data = $request->validated();
+        
+        $file = File::query()
+            ->where('id', $data['id'])
+            ->where('created_by', auth()->id())
+            ->firstOrFail();
+        
+        // Check if name is different
+        if ($file->name === $data['name']) {
+            return response()->json([
+                'message' => 'File name is the same.'
+            ]);
+        }
+        
+        // Update file name
+        $file->name = $data['name'];
+        $file->save();
+        
+        return response()->json([
+            'message' => 'File renamed successfully.',
+            'file' => new FileResource($file)
+        ]);
     }
 
     /**

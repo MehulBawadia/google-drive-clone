@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('share', 'share')->name('.share');
         Route::post('/toggle-favourite', 'toggleFavourite')->name('.toggleFavourite');
+        Route::post('/rename', 'rename')->name('.rename');
     });
 
     Route::name('files')->prefix('files')->controller(DownloadController::class)->group(function () {
