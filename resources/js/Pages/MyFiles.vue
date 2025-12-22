@@ -16,6 +16,7 @@ import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
 import { StarIcon as StarOutlineIcon } from "@heroicons/vue/24/outline";
 import { ON_SEARCH, emitter, showSuccessNotification, showErrorNotification } from "@/event-bus";
 import ShareFileButton from "@/Components/App/ShareFileButton.vue";
+import MoveFileModal from "@/Components/App/MoveFileModal.vue";
 
 const props = defineProps({
     files: Object,
@@ -34,6 +35,8 @@ const onlyFavourites = ref(false);
 const openDropdown = ref(null);
 const renamingFile = ref(null);
 const newFileName = ref('');
+const showMoveModal = ref(false);
+const fileToMove = ref(null);
 
 const selectedIds = computed(() => {
     return Object.entries(selected.value)
@@ -188,10 +191,24 @@ const handleRenameKeydown = (event, file) => {
 };
 
 const moveFile = (file) => {
-    // TODO: Implementasi modal untuk pilih destination folder
-    console.log('Move file:', file.name);
-    showSuccessNotification(`File ${file.name} moved`);
+    fileToMove.value = file;
+    showMoveModal.value = true;
     closeDropdown();
+};
+
+const onFileMoved = (movedFile) => {
+    // Remove file from current list as it's moved to another location
+    const index = allFiles.value.data.findIndex(f => f.id === movedFile.id);
+    if (index !== -1) {
+        allFiles.value.data.splice(index, 1);
+    }
+    showMoveModal.value = false;
+    fileToMove.value = null;
+};
+
+const onMoveModalClose = () => {
+    showMoveModal.value = false;
+    fileToMove.value = null;
 };
 
 const copyFile = (file) => {
@@ -319,7 +336,7 @@ onMounted(() => {
 
         <div class="flex-1 overflow-auto">
             <table
-                class="w-full text-sm text-left text-gray-500 rounded overflow-hidden shadow"
+                class="w-full text-sm text-left text-gray-500 rounded  shadow"
             >
                 <thead
                     class="text-xs text-gray-700 uppercase tracking-wider bg-gray-200"
@@ -422,7 +439,7 @@ onMounted(() => {
                             {{ file.updated_at }}
                         </td>
                         <td
-                            class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap relative"
+                            class="px-6 py-4  font-medium tracking-wider text-gray-900 whitespace-nowrap relative"
                         >
                             <div class="dropdown-menu relative">
                                 <button
@@ -434,7 +451,7 @@ onMounted(() => {
                                 
                                 <div
                                     v-if="openDropdown === file.id"
-                                    class="absolute right-0 top-8 w-36 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                                    class="absolute left-0 z-10 top-full mt-1 w-36 bg-white border border-gray-200 rounded-md shadow-lg z-50"
                                 >
                                     <div class="py-1">
                                         <button
@@ -443,12 +460,18 @@ onMounted(() => {
                                         >
                                             Rename
                                         </button>
-                                        <button
+                                       
+                                    </div>
+                                    <div class="py-1">
+                                         <button
                                             @click="moveFile(file)"
                                             class="w-full px-4 py-2 text-left text-sm font-medium tracking-wider text-gray-700 hover:bg-blue-100 transition ease-in-out duration-200"
                                         >
                                             Move
                                         </button>
+                                        
+                                    </div>
+                                    <div class="py-1">
                                         <button
                                             @click="copyFile(file)"
                                             class="w-full px-4 py-2 text-left text-sm font-medium tracking-wider text-gray-700 hover:bg-blue-100 transition ease-in-out duration-200"
@@ -472,5 +495,13 @@ onMounted(() => {
 
             <div ref="loadMoreIntersect"></div>
         </div>
+        
+        <!-- Move File Modal -->
+        <MoveFileModal 
+            :show="showMoveModal" 
+            :file="fileToMove" 
+            @close="onMoveModalClose"
+            @moved="onFileMoved"
+        />
     </AuthenticatedLayout>
 </template>

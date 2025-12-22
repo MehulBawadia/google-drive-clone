@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddToFavouritesRequest;
 use App\Http\Requests\CreateFolderRequest;
 use App\Http\Requests\FileActionsRequest;
+use App\Http\Requests\MoveFileRequest;
 use App\Http\Requests\RenameFileRequest;
 use App\Http\Requests\ShareFilesRequest;
 use App\Http\Requests\StoreFileRequest;
@@ -342,6 +343,65 @@ class FileController extends Controller
         
         return response()->json([
             'message' => 'File renamed successfully.',
+            'file' => new FileResource($file)
+        ]);
+    }
+
+    /**
+     * Move a file or folder to another location.
+     *
+     * @param MoveFileRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function move(MoveFileRequest $request)
+    {
+        $data = $request->validated();
+        
+        $file = File::query()
+            ->where('id', $data['id'])
+            ->where('created_by', auth()->id())
+            ->firstOrFail();
+        
+        // Handle moving to root folder
+        if ($data['parent_id'] == 1 || !$data['parent_id']) {
+            $destinationFolder = $this->getRoot();
+        } else {
+            $destinationFolder = File::query()
+                ->where('id', $data['parent_id'])
+                ->where('created_by', auth()->id())
+                ->where('is_folder', true)
+                ->firstOrFail();
+        }
+        
+        // Check if trying to move to the same location
+        if ($file->parent_id == $destinationFolder->id) {
+            return response()->json([
+                'message' => 'File is already in this location.'
+            ]);
+        }
+        
+        // Check if trying to move a folder into itself or its descendants
+        if ($file->is_folder) {
+            $ancestors = $destinationFolder->ancestors;
+            foreach ($ancestors as $ancestor) {
+                if ($ancestor->id == $file->id) {
+                    return response()->json([
+                        'message' => 'Cannot move folder into itself or its subdirectory.'
+                    ], 422);
+                }
+            }
+            if ($destinationFolder->id == $file->id) {
+                return response()->json([
+                    'message' => 'Cannot move folder into itself.'
+                ], 422);
+            }
+        }
+        
+        // Move the file/folder
+        $destinationFolder->appendNode($file);
+        
+        return response()->json([
+            'message' => 'File moved successfully.',
             'file' => new FileResource($file)
         ]);
     }
