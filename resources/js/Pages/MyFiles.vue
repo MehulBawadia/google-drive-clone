@@ -5,16 +5,18 @@ import {
     ChevronRightIcon,
     HomeIcon,
     StarIcon as StarSolidIcon,
+    EllipsisVerticalIcon,
 } from "@heroicons/vue/20/solid";
 import FileIcon from "@/Components/App/FileIcon.vue";
-import { ref, onMounted, onUpdated, computed } from "vue";
+import { ref, onMounted, onUpdated, onUnmounted, computed } from "vue";
 import { httpGet, httpPost } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
 import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
 import { StarIcon as StarOutlineIcon } from "@heroicons/vue/24/outline";
-import { ON_SEARCH, emitter, showSuccessNotification } from "@/event-bus";
+import { ON_SEARCH, emitter, showSuccessNotification, showErrorNotification } from "@/event-bus";
 import ShareFileButton from "@/Components/App/ShareFileButton.vue";
+import MoveFileModal from "@/Components/App/MoveFileModal.vue";
 
 const props = defineProps({
     files: Object,
@@ -30,6 +32,11 @@ const allFiles = ref({
 const allSelected = ref(false);
 const selected = ref({});
 const onlyFavourites = ref(false);
+const openDropdown = ref(null);
+const renamingFile = ref(null);
+const newFileName = ref('');
+const showMoveModal = ref(false);
+const fileToMove = ref(null);
 
 const selectedIds = computed(() => {
     return Object.entries(selected.value)
@@ -113,6 +120,104 @@ const showOnlyFavourites = () => {
     return router.get(route("myFiles"), { favourites: 1 });
 };
 
+const goBack = () => {
+    const ancestors = props.ancestors.data;
+    
+    if (ancestors.length > 1) {
+        // Jika ada lebih dari 1 ancestor, navigasi ke parent (ancestor kedua terakhir)
+        const parentFolder = ancestors[ancestors.length - 2];
+        router.visit(route("myFiles", { folder: parentFolder.path }));
+    } else if (ancestors.length === 1) {
+        // Jika hanya ada 1 ancestor (root), navigasi ke my files root
+        router.visit(route("myFiles"));
+    }
+    // Jika ancestors.length === 0, sudah di root, tidak melakukan apa-apa
+};
+
+const toggleDropdown = (fileId) => {
+    openDropdown.value = openDropdown.value === fileId ? null : fileId;
+};
+
+const closeDropdown = () => {
+    openDropdown.value = null;
+};
+
+const renameFile = (file) => {
+    renamingFile.value = file.id;
+    newFileName.value = file.name;
+    closeDropdown();
+    // Focus input setelah render
+    setTimeout(() => {
+        const input = document.querySelector(`#rename-input-${file.id}`);
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    }, 10);
+};
+
+const saveRename = (file) => {
+    if (newFileName.value && newFileName.value !== file.name) {
+        httpPost(route("files.rename"), { 
+            id: file.id, 
+            name: newFileName.value 
+        }).then((response) => {
+            file.name = newFileName.value; // Update local state
+            showSuccessNotification(response.message || `File renamed to ${newFileName.value}`);
+            cancelRename();
+        }).catch((error) => {
+            console.error('Rename error:', error);
+            showErrorNotification('Failed to rename file');
+            cancelRename();
+        });
+    } else {
+        cancelRename();
+    }
+};
+
+const cancelRename = () => {
+    renamingFile.value = null;
+    newFileName.value = '';
+};
+
+const handleRenameKeydown = (event, file) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        saveRename(file);
+    } else if (event.key === 'Escape') {
+        event.preventDefault();
+        cancelRename();
+    }
+};
+
+const moveFile = (file) => {
+    fileToMove.value = file;
+    showMoveModal.value = true;
+    closeDropdown();
+};
+
+const onFileMoved = (movedFile) => {
+    // Remove file from current list as it's moved to another location
+    const index = allFiles.value.data.findIndex(f => f.id === movedFile.id);
+    if (index !== -1) {
+        allFiles.value.data.splice(index, 1);
+    }
+    showMoveModal.value = false;
+    fileToMove.value = null;
+};
+
+const onMoveModalClose = () => {
+    showMoveModal.value = false;
+    fileToMove.value = null;
+};
+
+const copyFile = (file) => {
+    // TODO: Implementasi API call untuk copy
+    console.log('Copy file:', file.name);
+    showSuccessNotification(`File ${file.name} copied`);
+    closeDropdown();
+};
+
 onUpdated(() => {
     allFiles.value = {
         data: props.files.data,
@@ -129,6 +234,30 @@ onMounted(() => {
     search.value = page.props.search ?? "";
     emitter.on(ON_SEARCH, (value) => {
         search.value = value;
+    });
+
+    // Event listener untuk keyboard backspace
+    const handleKeydown = (event) => {
+        if (event.key === 'Backspace' && !event.target.matches('input, textarea')) {
+            event.preventDefault();
+            goBack();
+        }
+    };
+
+    // Event listener untuk close dropdown saat click outside
+    const handleClickOutside = (event) => {
+        if (!event.target.closest('.dropdown-menu')) {
+            closeDropdown();
+        }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    document.addEventListener('click', handleClickOutside);
+
+    // Cleanup event listener saat komponen di-unmount
+    onUnmounted(() => {
+        document.removeEventListener('keydown', handleKeydown);
+        document.removeEventListener('click', handleClickOutside);
     });
 
     const observer = new IntersectionObserver(
@@ -207,7 +336,7 @@ onMounted(() => {
 
         <div class="flex-1 overflow-auto">
             <table
-                class="w-full text-sm text-left text-gray-500 rounded overflow-hidden shadow"
+                class="w-full text-sm text-left text-gray-500 rounded  shadow"
             >
                 <thead
                     class="text-xs text-gray-700 uppercase tracking-wider bg-gray-200"
@@ -225,6 +354,7 @@ onMounted(() => {
                         <th class="px-6 py-3">Owner</th>
                         <th class="px-6 py-3">Size</th>
                         <th class="px-6 py-3">Last Modified</th>
+                        <th class="px-6 py-3">Actions</th>
                     </tr>
                 </thead>
 
@@ -274,7 +404,17 @@ onMounted(() => {
                         >
                             <div class="flex items-center">
                                 <FileIcon :file="file" />
-                                {{ file.name }}
+                                <span v-if="renamingFile !== file.id">{{ file.name }}</span>
+                                <input
+                                    v-else
+                                    :id="`rename-input-${file.id}`"
+                                    v-model="newFileName"
+                                    @keydown="handleRenameKeydown($event, file)"
+                                    @blur="saveRename(file)"
+                                    @click.stop
+                                    class="ml-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    type="text"
+                                />
                             </div>
                         </td>
                         <td
@@ -298,6 +438,50 @@ onMounted(() => {
                         >
                             {{ file.updated_at }}
                         </td>
+                        <td
+                            class="px-6 py-4  font-medium tracking-wider text-gray-900 whitespace-nowrap relative"
+                        >
+                            <div class="dropdown-menu relative">
+                                <button
+                                    @click.stop="toggleDropdown(file.id)"
+                                    class="p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <EllipsisVerticalIcon class="w-5 h-5 text-gray-500" />
+                                </button>
+                                
+                                <div
+                                    v-if="openDropdown === file.id"
+                                    class="absolute left-0 z-10 top-full mt-1 w-36 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                                >
+                                    <div class="py-1">
+                                        <button
+                                            @click="renameFile(file)"
+                                            class="w-full px-4 py-2 text-left text-sm font-medium tracking-wider text-gray-700 hover:bg-blue-100 transition ease-in-out duration-200"
+                                        >
+                                            Rename
+                                        </button>
+                                       
+                                    </div>
+                                    <div class="py-1">
+                                         <button
+                                            @click="moveFile(file)"
+                                            class="w-full px-4 py-2 text-left text-sm font-medium tracking-wider text-gray-700 hover:bg-blue-100 transition ease-in-out duration-200"
+                                        >
+                                            Move
+                                        </button>
+                                        
+                                    </div>
+                                    <div class="py-1">
+                                        <button
+                                            @click="copyFile(file)"
+                                            class="w-full px-4 py-2 text-left text-sm font-medium tracking-wider text-gray-700 hover:bg-blue-100 transition ease-in-out duration-200"
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -311,5 +495,13 @@ onMounted(() => {
 
             <div ref="loadMoreIntersect"></div>
         </div>
+        
+        <!-- Move File Modal -->
+        <MoveFileModal 
+            :show="showMoveModal" 
+            :file="fileToMove" 
+            @close="onMoveModalClose"
+            @moved="onFileMoved"
+        />
     </AuthenticatedLayout>
 </template>
