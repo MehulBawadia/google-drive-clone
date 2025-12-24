@@ -1,6 +1,10 @@
 ## GD Clone
 
-This is a simple google drive clone built using Laravel and VueJs via InteriaJs.
+This is a simple Google Drive clone built using Laravel and VueJS via InteriaJS.
+
+## NO MAINTENANCE
+
+I have stopped working on this project because I don't have enough time, and hence, there won't be any further enhancements done to this project.
 
 ### Installation
 
